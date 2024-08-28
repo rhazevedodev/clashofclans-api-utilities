@@ -1,0 +1,13 @@
+package com.br.natividade.api;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class NatividadeCocApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(NatividadeCocApplication.class, args);
+	}
+
+}
