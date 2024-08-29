@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -25,8 +26,11 @@ import java.util.stream.Collectors;
 @Service
 public class ClanService {
 
-    private static final String API_URL = "https://api.clashofclans.com/v1/clans/";
-    private static final String BEARER_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjgwZGVlNmMyLTgxNzItNGFlZi1hZTE5LTJkZjMwY2Y1MGZmZiIsImlhdCI6MTcxNjk0MTQ0OCwic3ViIjoiZGV2ZWxvcGVyL2EwODJkMGU5LTVjNDQtMmVlMi1hY2ZlLTBlN2E4MzEyNjM4NyIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjE3OS4yMDkuMTQwLjExNyJdLCJ0eXBlIjoiY2xpZW50In1dfQ.Vp9LuSvB5Xe7RNIl80IoVumgtcscrwBhMw3negpgtgcu-tdFIZqFTZD39ER54Jls4zudCrdxonXWh6LgyKHGIQ";
+    @Value("${clashofclans.api.url-getClanMembersList}")
+    private String apiUrl;
+
+    @Value("${clashofclans.api.bearer-token}")
+    private String bearerToken;
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -37,66 +41,93 @@ public class ClanService {
     }
 
     public File generateClanExcel(String tag) throws IOException, InterruptedException {
-        String encodedTag = tag.replace("#", "%23");
-        String url = API_URL + encodedTag;
+        Clan clan = fetchClanData(tag);
+        Map<String, ContaEnum> contaMap = mapContas();
 
-        HttpRequest request = HttpUtil.createRequest(url, BEARER_TOKEN);
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet primarySheet = createSheet(workbook, "Contas Principais", false);
+            Sheet secondarySheet = createSheet(workbook, "Contas Secundárias", true);
+            Sheet unidentifiedSheet = createSheet(workbook, "Contas Não Identificadas", false);
+
+            fillSheets(clan.memberList(), contaMap, primarySheet, secondarySheet, unidentifiedSheet);
+
+            return writeWorkbookToFile(workbook, clan.name());
+        }
+    }
+
+    private Clan fetchClanData(String tag) throws IOException, InterruptedException {
+        String encodedTag = tag.replace("#", "%23");
+        String url = apiUrl + encodedTag;
+
+        HttpRequest request = HttpUtil.createRequest(url, bearerToken);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-        Clan clan = objectMapper.readValue(response.body(), Clan.class);
-        List<Member> memberList = clan.memberList();
+        return objectMapper.readValue(response.body(), Clan.class);
+    }
 
-        Workbook workbook = new XSSFWorkbook();
-        Sheet primarySheet = workbook.createSheet("Contas Principais");
-        createHeaderRow(primarySheet, 0, false);
+    private Map<String, ContaEnum> mapContas() {
+        return Arrays.stream(ContaEnum.values())
+                .collect(Collectors.toMap(ContaEnum::getTag, conta -> conta));
+    }
+
+    private Sheet createSheet(Workbook workbook, String sheetName, boolean isSecundaria) {
+        Sheet sheet = workbook.createSheet(sheetName);
+        createHeaderRow(sheet, 0, isSecundaria);
+        return sheet;
+    }
+
+    private void fillSheets(List<Member> members, Map<String, ContaEnum> contaMap,
+                            Sheet primarySheet, Sheet secondarySheet, Sheet unidentifiedSheet) {
         int primaryRowNum = 1;
-
-        Sheet secondarySheet = workbook.createSheet("Contas Secundárias");
-        createHeaderRow(secondarySheet, 0, true);
         int secondaryRowNum = 1;
-
-        Sheet unidentifiedSheet = workbook.createSheet("Contas Não Identificadas");
-        createHeaderRow(unidentifiedSheet, 0, false);
         int unidentifiedRowNum = 1;
 
-        Map<String, ContaEnum> contaMap = Arrays.stream(ContaEnum.values())
-                .collect(Collectors.toMap(ContaEnum::getTag, conta -> conta));
-
-        for (Member member : memberList) {
+        for (Member member : members) {
             ContaEnum conta = contaMap.get(member.tag());
+
+            Sheet targetSheet;
+            int rowNum;
+            boolean isSecondary = false;
 
             if (conta != null) {
                 if (conta.getTagContaPrincipal().isEmpty()) {
-                    Row row = primarySheet.createRow(primaryRowNum++);
-                    row.createCell(0).setCellValue(member.tag());
-                    row.createCell(1).setCellValue(member.name());
-                    row.createCell(2).setCellValue(member.townHallLevel());
+                    targetSheet = primarySheet;
+                    rowNum = primaryRowNum++;
                 } else {
-                    Row row = secondarySheet.createRow(secondaryRowNum++);
-                    row.createCell(0).setCellValue(member.tag());
-                    row.createCell(1).setCellValue(member.name());
-                    row.createCell(2).setCellValue(member.townHallLevel());
-                    row.createCell(3).setCellValue(ContaEnum.getEnumNameByTag(conta.getTagContaPrincipal()));
+                    targetSheet = secondarySheet;
+                    rowNum = secondaryRowNum++;
+                    isSecondary = true;
                 }
             } else {
-                Row row = unidentifiedSheet.createRow(unidentifiedRowNum++);
-                row.createCell(0).setCellValue(member.tag());
-                row.createCell(1).setCellValue(member.name());
-                row.createCell(2).setCellValue(member.townHallLevel());
+                targetSheet = unidentifiedSheet;
+                rowNum = unidentifiedRowNum++;
             }
-        }
 
+            fillRow(targetSheet, rowNum, member, conta, isSecondary);
+        }
+    }
+
+    private void fillRow(Sheet sheet, int rowNum, Member member, ContaEnum conta, boolean isSecondary) {
+        Row row = sheet.createRow(rowNum);
+        row.createCell(0).setCellValue(member.tag());
+        row.createCell(1).setCellValue(member.name());
+        row.createCell(2).setCellValue(member.townHallLevel());
+        if (isSecondary && conta != null) {
+            row.createCell(3).setCellValue(ContaEnum.getEnumNameByTag(conta.getTagContaPrincipal()));
+        }
+    }
+
+    private File writeWorkbookToFile(Workbook workbook, String clanName) throws IOException {
         File outputDir = new File(System.getProperty("java.io.tmpdir"), "generatedExcels");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
 
-        File outputFile = new File(outputDir, "clan_members_" + clan.name() + ".xlsx");
+        File outputFile = new File(outputDir, "clan_members_" + clanName + ".xlsx");
         try (FileOutputStream fileOut = new FileOutputStream(outputFile)) {
             workbook.write(fileOut);
         }
 
-        workbook.close();
         return outputFile;
     }
 
