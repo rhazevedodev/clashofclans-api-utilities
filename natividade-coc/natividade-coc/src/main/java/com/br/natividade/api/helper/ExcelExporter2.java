@@ -22,6 +22,7 @@ public class ExcelExporter2 {
             List<ClanWarLeagueWarMembers> fifthMembers,
             List<ClanWarLeagueWarMembers> sixthMembers,
             List<ClanWarLeagueWarMembers> seventhMembers,
+            int warInPreparation,
             String nomeClan) {
 
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -31,6 +32,10 @@ public class ExcelExporter2 {
             CellStyle centeredStyle = workbook.createCellStyle();
             centeredStyle.setAlignment(HorizontalAlignment.CENTER);
             centeredStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+            //Criar estilo para lateralizacao a esquerda
+            CellStyle leftStyle = workbook.createCellStyle();
+            leftStyle.setAlignment(HorizontalAlignment.LEFT);
 
             // Criar cabeçalhos
             Row headerRow1 = sheet.createRow(0);
@@ -70,7 +75,7 @@ public class ExcelExporter2 {
                 Row row = sheet.createRow(rowNum++);
                 Cell cellTag = row.createCell(0);
                 cellTag.setCellValue(member.tag());
-                cellTag.setCellStyle(centeredStyle);
+                cellTag.setCellStyle(leftStyle);
 
                 Cell cellName = row.createCell(1);
                 cellName.setCellValue(member.name());
@@ -150,8 +155,6 @@ public class ExcelExporter2 {
             for (int i = 0; i < nextColumnGuerra2 + 2; i++) {
                 sheet.autoSizeColumn(i);
             }
-
-
 
             // Atualizar cabeçalhos e sub-cabeçalhos para a terceira lista
             int nextColumnGuerra3 = 6; // Inicia a partir da coluna G
@@ -386,6 +389,7 @@ public class ExcelExporter2 {
 
             // Preencher dados da segunda lista, começando a partir da nova coluna
             int secondListRowNumGuerra7 = 2;
+
             for (ClanWarLeagueWarMembers member : seventhMembers) {
                 Row row = sheet.getRow(secondListRowNumGuerra7++);
                 if (row == null) {
@@ -401,14 +405,24 @@ public class ExcelExporter2 {
                     attackStars.append("0");//No attacks found.
                 }
                 Cell cellAttackStars = row.createCell(nextColumnGuerra7);
-                cellAttackStars.setCellValue(attackStars.toString().trim());
+                if(warInPreparation == 7) {
+                    cellAttackStars.setCellValue("0");
+                } else {
+                    cellAttackStars.setCellValue(attackStars.toString().trim());
+                }
                 cellAttackStars.setCellStyle(centeredStyle);
 
                 int bestAttackStars = 1; // Valor padrão
 
-                if (member.bestOpponentAttack() != null) {
-                    bestAttackStars = 3 - member.bestOpponentAttack().stars();
+                System.out.println(member.name());
+                if(warInPreparation == 7) {
+                    bestAttackStars = 0;
+                } else {
+                    if (member.bestOpponentAttack() != null) {
+                        bestAttackStars = 3 - member.bestOpponentAttack().stars();
+                    }
                 }
+
                 Cell cellBestAttackStars = row.createCell(nextColumnGuerra7 + 1);
                 cellBestAttackStars.setCellValue(bestAttackStars);
                 cellBestAttackStars.setCellStyle(centeredStyle);
@@ -417,6 +431,34 @@ public class ExcelExporter2 {
             // Ajustar o tamanho das colunas para caber o conteúdo
             for (int i = 0; i < nextColumnGuerra7 + 2; i++) {
                 sheet.autoSizeColumn(i);
+            }
+
+            for (int rowIndex = 2; rowIndex < sheet.getLastRowNum() + 1; rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (row == null) {
+                    continue;
+                }
+                double sum = 0;
+                for (int colIndex = 2; colIndex <= 15; colIndex++) { // Columns C to P
+                    cell = row.getCell(colIndex);
+                    if (cell != null) {
+                        if (cell.getCellType() == CellType.STRING) {
+                            try {
+                                double numericValue = Double.parseDouble(cell.getStringCellValue());
+                                cell.setCellValue(numericValue);
+                            } catch (NumberFormatException e) {
+                                // Handle the case where the cell value is not a valid number
+                                continue;
+                            }
+                        }
+                        if (cell.getCellType() == CellType.NUMERIC) {
+                            sum += cell.getNumericCellValue();
+                        }
+                    }
+                }
+                Cell sumCell = row.createCell(16); // Column Q
+                sumCell.setCellValue(sum);
+                sumCell.setCellStyle(centeredStyle);
             }
 
             return writeWorkbookToFile(workbook, nomeClan);

@@ -102,27 +102,35 @@ public class ClanWarLeagueService {
 
         ExcelExporter2 excelExporter = new ExcelExporter2();
 
-        if(meuClan2 == null) {
+        int warInPreparation = 0;
+
+        if(warRegistry2.state().equals("preparation")) {
             meuClan2 = meuClan1;
+            warInPreparation = 2;
         }
-        if(meuClan3 == null) {
+        if(warRegistry3.state().equals("preparation")) {
             meuClan3 = meuClan1;
+            warInPreparation = 3;
         }
-        if(meuClan4 == null) {
+        if(warRegistry4.state().equals("preparation")) {
             meuClan4 = meuClan1;
+            warInPreparation = 4;
         }
-        if(meuClan5 == null) {
+        if(warRegistry5.state().equals("preparation")) {
             meuClan5 = meuClan1;
+            warInPreparation = 5;
         }
-        if(meuClan6 == null) {
+        if(warRegistry6.state().equals("preparation")) {
             meuClan6 = meuClan1;
+            warInPreparation = 6;
         }
-        if(meuClan7== null) {
-            meuClan7= meuClan1;
+        if(warRegistry7.state().equals("preparation")) {
+            meuClan7 = meuClan1;
+            warInPreparation = 7;
         }
 
         return excelExporter.exportToExcel(meuClan1.members(), meuClan2.members(), meuClan3.members(), meuClan4.members(),
-                meuClan5.members(), meuClan6.members(), meuClan7.members(), "TESTECLAN");
+                meuClan5.members(), meuClan6.members(), meuClan7.members(), warInPreparation,"TESTECLAN");
 
     }
 
