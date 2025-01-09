@@ -2,7 +2,7 @@ package com.br.natividade.api.service;
 
 import com.br.natividade.api.helper.HttpUtil;
 import com.br.natividade.api.model.Clan;
-import com.br.natividade.api.model.ContaEnum;
+import com.br.natividade.api.enumerator.ContaEnum;
 import com.br.natividade.api.model.Member;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.ss.usermodel.Row;

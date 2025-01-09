@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
@@ -13,7 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ExcelExporter2 {
-    public void exportToExcel(
+    public File exportToExcel(
             List<ClanWarLeagueWarMembers> firstMembers,
             List<ClanWarLeagueWarMembers> secondMembers,
             List<ClanWarLeagueWarMembers> thirdMembers,
@@ -21,15 +22,7 @@ public class ExcelExporter2 {
             List<ClanWarLeagueWarMembers> fifthMembers,
             List<ClanWarLeagueWarMembers> sixthMembers,
             List<ClanWarLeagueWarMembers> seventhMembers,
-            String filePath) {
-        // Ordenar as listas de membros
-//        Collections.sort(firstMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
-//        Collections.sort(secondMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
-//        Collections.sort(thirdMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
-//        Collections.sort(fourthMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
-//        Collections.sort(fifthMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
-//        Collections.sort(sixthMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
-//        Collections.sort(seventhMembers, Comparator.comparing(ClanWarLeagueWarMembers::mapPosition));
+            String nomeClan) {
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Members Data");
@@ -158,10 +151,7 @@ public class ExcelExporter2 {
                 sheet.autoSizeColumn(i);
             }
 
-            // Escrever o arquivo
-//            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
-//                workbook.write(fileOut);
-//            }
+
 
             // Atualizar cabeçalhos e sub-cabeçalhos para a terceira lista
             int nextColumnGuerra3 = 6; // Inicia a partir da coluna G
@@ -216,10 +206,6 @@ public class ExcelExporter2 {
                 sheet.autoSizeColumn(i);
             }
 
-            // Escrever o arquivo
-//            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
-//                workbook.write(fileOut);
-//            }
 
             // Atualizar cabeçalhos e sub-cabeçalhos para a quarta lista
             int nextColumnGuerra4 = 8; // Inicia a partir da coluna I
@@ -433,15 +419,27 @@ public class ExcelExporter2 {
                 sheet.autoSizeColumn(i);
             }
 
-            // Escrever o arquivo
-            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
-                workbook.write(fileOut);
-            }
+            return writeWorkbookToFile(workbook, nomeClan);
 
-            System.out.println("Excel file created at: " + filePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
+    }
+
+    private File writeWorkbookToFile(Workbook workbook, String nomeClan) throws IOException {
+        File outputDir = new File(System.getProperty("java.io.tmpdir"), "generatedExcels");
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        File outputFile = new File(outputDir, "clan_league_" + nomeClan + ".xlsx");
+        try (FileOutputStream fileOut = new FileOutputStream(outputFile)) {
+            workbook.write(fileOut);
+        }
+
+        return outputFile;
     }
 }
 

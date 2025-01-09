@@ -1,13 +1,16 @@
 package com.br.natividade.api.service;
 
+import com.br.natividade.api.enumerator.Clans;
 import com.br.natividade.api.helper.ExcelExporter2;
 import com.br.natividade.api.model.ClanWarLeagueWarClan;
+import com.br.natividade.api.model.ClanWarLeagueWarMembers;
 import com.br.natividade.api.model.ClanWarLeagueWarRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.br.natividade.api.helper.HttpUtil;
 import com.br.natividade.api.model.ClanWarLeagueGroup;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -75,52 +78,84 @@ public class ClanWarLeagueService {
         return null;
     }
 
-    public String exportExcelFileAllSevenDaysOfLeague(String tag) throws Exception {
+    public File exportExcelFileAllSevenDaysOfLeague(String tag) throws Exception {
         ClanWarLeagueWarRegistry warRegistry1 = fetchClanWarLeagueWarRegistry(tag, 1);
-        ClanWarLeagueWarClan meuClan1 =
-                warRegistry1.clan().name().contains("NATIVIDADE") ?
-                        warRegistry1.clan() :
-                        warRegistry1.opponent();
+        ClanWarLeagueWarClan meuClan1 = warRegistry1.clan().name().contains("NATIVIDADE") ? warRegistry1.clan() : warRegistry1.opponent();
+
         ClanWarLeagueWarRegistry warRegistry2 = fetchClanWarLeagueWarRegistry(tag, 2);
-        ClanWarLeagueWarClan meuClan2 =
-                warRegistry2.clan().name().contains("NATIVIDADE") ?
-                        warRegistry2.clan() :
-                        warRegistry2.opponent();
+        ClanWarLeagueWarClan meuClan2 = (warRegistry2 != null && warRegistry2.clan().name().contains("NATIVIDADE")) ? warRegistry2.clan() : (warRegistry2 != null ? warRegistry2.opponent() : null);
 
         ClanWarLeagueWarRegistry warRegistry3 = fetchClanWarLeagueWarRegistry(tag, 3);
-        ClanWarLeagueWarClan meuClan3 =
-                warRegistry3.clan().name().contains("NATIVIDADE") ?
-                        warRegistry3.clan() :
-                        warRegistry3.opponent();
+        ClanWarLeagueWarClan meuClan3 = (warRegistry3 != null && warRegistry3.clan().name().contains("NATIVIDADE")) ? warRegistry3.clan() : (warRegistry3 != null ? warRegistry3.opponent() : null);
+
         ClanWarLeagueWarRegistry warRegistry4 = fetchClanWarLeagueWarRegistry(tag, 4);
-        ClanWarLeagueWarClan meuClan4 =
-                warRegistry4.clan().name().contains("NATIVIDADE") ?
-                        warRegistry4.clan() :
-                        warRegistry4.opponent();
+        ClanWarLeagueWarClan meuClan4 = (warRegistry4 != null && warRegistry4.clan().name().contains("NATIVIDADE")) ? warRegistry4.clan() : (warRegistry4 != null ? warRegistry4.opponent() : null);
+
         ClanWarLeagueWarRegistry warRegistry5 = fetchClanWarLeagueWarRegistry(tag, 5);
-        ClanWarLeagueWarClan meuClan5 =
-                warRegistry5.clan().name().contains("NATIVIDADE") ?
-                        warRegistry5.clan() :
-                        warRegistry5.opponent();
+        ClanWarLeagueWarClan meuClan5 = (warRegistry5 != null && warRegistry5.clan().name().contains("NATIVIDADE")) ? warRegistry5.clan() : (warRegistry5 != null ? warRegistry5.opponent() : null);
+
         ClanWarLeagueWarRegistry warRegistry6 = fetchClanWarLeagueWarRegistry(tag, 6);
-        ClanWarLeagueWarClan meuClan6 =
-                warRegistry6.clan().name().contains("NATIVIDADE") ?
-                        warRegistry6.clan() :
-                        warRegistry6.opponent();
+        ClanWarLeagueWarClan meuClan6 = (warRegistry6 != null && warRegistry6.clan().name().contains("NATIVIDADE")) ? warRegistry6.clan() : (warRegistry6 != null ? warRegistry6.opponent() : null);
+
         ClanWarLeagueWarRegistry warRegistry7 = fetchClanWarLeagueWarRegistry(tag, 7);
-        ClanWarLeagueWarClan meuClan7 =
-                warRegistry7.clan().name().contains("NATIVIDADE") ?
-                        warRegistry7.clan() :
-                        warRegistry7.opponent();
+        ClanWarLeagueWarClan meuClan7 = (warRegistry7 != null && warRegistry7.clan().name().contains("NATIVIDADE")) ? warRegistry7.clan() : (warRegistry7 != null ? warRegistry7.opponent() : null);
+
         ExcelExporter2 excelExporter = new ExcelExporter2();
 
-        excelExporter.exportToExcel(meuClan1.members(), meuClan2.members(), meuClan3.members(), meuClan4.members(),
-                meuClan5.members(), meuClan6.members(), meuClan7.members(), "MembersData33.xlsx");
-        return "EXPORTED";
+        if(meuClan2 == null) {
+            meuClan2 = meuClan1;
+        }
+        if(meuClan3 == null) {
+            meuClan3 = meuClan1;
+        }
+        if(meuClan4 == null) {
+            meuClan4 = meuClan1;
+        }
+        if(meuClan5 == null) {
+            meuClan5 = meuClan1;
+        }
+        if(meuClan6 == null) {
+            meuClan6 = meuClan1;
+        }
+        if(meuClan7== null) {
+            meuClan7= meuClan1;
+        }
+
+        return excelExporter.exportToExcel(meuClan1.members(), meuClan2.members(), meuClan3.members(), meuClan4.members(),
+                meuClan5.members(), meuClan6.members(), meuClan7.members(), "TESTECLAN");
+
     }
 
 
+    public String verificarAtaquesPendentes(String tag, int dia) throws Exception {
+        ClanWarLeagueWarRegistry warRegistry1 = fetchClanWarLeagueWarRegistry(tag, dia);
+        ClanWarLeagueWarClan meuClan1 = null;
 
+        for (Clans clan : Clans.values()) {
+            if (warRegistry1.clan().name().contains(clan.name())) {
+                meuClan1 = warRegistry1.clan();
+                break;
+            } else if (warRegistry1.opponent().name().contains(clan.name())) {
+                meuClan1 = warRegistry1.opponent();
+                break;
+            }
+        }
+
+        if (meuClan1 == null) {
+            throw new RuntimeException("Nenhum clã correspondente encontrado.");
+        }
+
+        List<ClanWarLeagueWarMembers> members = meuClan1.members();
+        StringBuilder membersWithNoAttacks = new StringBuilder();
+
+        for (ClanWarLeagueWarMembers member : members) {
+            if (member.attacks() == null) {
+                membersWithNoAttacks.append(member.name()).append("\n");
+            }
+        }
+
+        return membersWithNoAttacks.toString();
+    }
 }
 
 

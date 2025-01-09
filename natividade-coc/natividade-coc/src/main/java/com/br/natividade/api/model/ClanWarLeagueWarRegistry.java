@@ -12,4 +12,5 @@ public record ClanWarLeagueWarRegistry(
         ClanWarLeagueWarClan opponent,
         String warStartTime
 ) {
+
 }

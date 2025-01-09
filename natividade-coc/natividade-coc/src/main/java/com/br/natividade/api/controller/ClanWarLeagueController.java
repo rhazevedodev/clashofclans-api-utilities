@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+
 @RestController
 @RequestMapping("/api/warLeague")
 public class ClanWarLeagueController {
@@ -43,9 +45,19 @@ public class ClanWarLeagueController {
     @GetMapping("/exportLeagueFile")
     public String exportLeagueFile(@RequestParam String tag) {
         try {
-            return clanWarLeagueService.exportExcelFileAllSevenDaysOfLeague(tag);
+            File excelFile = clanWarLeagueService.exportExcelFileAllSevenDaysOfLeague(tag);
+            return "Arquivo Excel criado com sucesso: " + excelFile.getAbsolutePath();
         } catch (Exception e) {
             throw new RuntimeException("Error exporting Clan War League data", e);
+        }
+    }
+
+    @GetMapping("/verificarAtaquesPendentes")
+    public String verificarAtaquesPendentes(@RequestParam String tag, @RequestParam String dia) {
+        try {
+            return clanWarLeagueService.verificarAtaquesPendentes(tag, Integer.parseInt(dia));
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao obter ataques pendentes", e);
         }
     }
 }

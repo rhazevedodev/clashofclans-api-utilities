@@ -1,4 +1,4 @@
-package com.br.natividade.api.model;
+package com.br.natividade.api.enumerator;
 
 public enum ContaEnum {
 
@@ -89,8 +89,26 @@ public enum ContaEnum {
     SKULLRAIDS021("#GPQU8U9VR","secundaria", false, "#YGGVQ9R2"),
     SKULLRAIDS024("#G9RULVV92","secundaria", false, "#YGGVQ9R2"),
     PKAIDOUX("#QCU0CVQ9Y","secundaria", false, "#YGGVQ9R2"),
-    YANZITO("#PRCYRP8CP","secundaria", false, "#QGG8V0YL");
-
+    YANZITO("#PRCYRP8CP","secundaria", false, "#QGG8V0YL"),
+    CABECAO(",#VUYU2J0P", "+55 11 99999-9999", true, ""),
+    DETONARALF("#88CG8RPVU","secundaria",false,"#Q28JY2C2"),
+    DETONARALF2("#8RRQLJQJP","secundaria",false,"#Q28JY2C2"),
+    RAFAEL("#2LR2RUL9U","secundaria",false,"#Q28JY2C2"),
+    SRDAGUERRA("#LRRPVGRCP","secundaria",false,"#Q28JY2C2"),
+    KEN("#2VJYL828Q","secundaria",false,"#Q28JY2C2"),
+    GUILE("#2VU22VPL9","secundaria",false,"#Q28JY2C2"),
+    KINGJHONEBR("#8LQC9YV0V","secundaria",false,"#Q28JY2C2"),
+    REINOESCONDIDO("#82VPLR0PP","secundaria",false,"#Q28JY2C2"),
+    BADBOY("#LU8CGR29R","secundaria",false,"#Q28JY2C2"),
+    RYU("#P9PCYQ88J","secundaria",false,"#Q28JY2C2"),
+    BLANKA("#92G22RJCC","secundaria",false,"#Q28JY2C2"),
+    KINGJHONE2("#YU2URJ9RU","secundaria",false,"#Q28JY2C2"),
+    GILGAMESH("#P2RL8C0YJ","+55 17 99788-4105",true,""),
+    ANDREWXD("#L2U8RP0GL","+55 87 9195-0340",true,""),
+    LORD("#QC8PQQP9U","+33 7 83 14 01 81",true,""),
+    RUSSO("#QJR82QR9J","secundaria",false,"#QC8PQQP9U"),
+    KONG("#8290UC8J","+55 11 97097-1187",true,""),
+    GOLDDRAGONFORCE("#28QLJ0VG2","+55 19 99180-0187",true,"");
 
     private final String tag;
     private final String contato;
