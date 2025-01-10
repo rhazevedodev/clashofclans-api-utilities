@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/warLeague")
@@ -43,10 +46,16 @@ public class ClanWarLeagueController {
     }
 
     @GetMapping("/exportLeagueFile")
-    public String exportLeagueFile(@RequestParam String tag) {
+    public List<String> exportLeagueFile() {
         try {
-            File excelFile = clanWarLeagueService.exportExcelFileAllSevenDaysOfLeague(tag);
-            return "Arquivo Excel criado com sucesso: " + excelFile.getAbsolutePath();
+            List<String> tags = Arrays.asList("%232YJRLYYCC", "%2320P292C8Y", "%232QCVR0P2R");
+            List<String> filePaths = new ArrayList<>();
+            for (String tag : tags) {
+                File excelFile = clanWarLeagueService.exportExcelFileAllSevenDaysOfLeague(tag);
+                filePaths.add(excelFile.getAbsolutePath());
+                System.out.println("Excel file exported to: " + excelFile.getAbsolutePath());
+            }
+            return filePaths;
         } catch (Exception e) {
             throw new RuntimeException("Error exporting Clan War League data", e);
         }

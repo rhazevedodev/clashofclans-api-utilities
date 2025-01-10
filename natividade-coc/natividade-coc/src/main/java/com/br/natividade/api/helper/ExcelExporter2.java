@@ -414,7 +414,7 @@ public class ExcelExporter2 {
 
                 int bestAttackStars = 1; // Valor padrão
 
-                System.out.println(member.name());
+//                System.out.println(member.name());
                 if(warInPreparation == 7) {
                     bestAttackStars = 0;
                 } else {
